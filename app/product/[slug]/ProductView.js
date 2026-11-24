@@ -1,4 +1,4 @@
-'use client';
+''use client';
 import { useState } from 'react';
 import Image from 'next/image';
 import { formatPrice } from '../../../lib/supabase';
@@ -66,7 +66,6 @@ export default function ProductView({ product }) {
           </div>
           <button disabled className="flex-1 bg-black py-3 text-sm text-white opacity-40">Add to Cart (coming in Phase 2)</button>
         </div>
-        <p className="mt-8 text-xs text-stone">Size guide: [placeholder] added in a later phase.</p>
       </div>
     </div>
   );
