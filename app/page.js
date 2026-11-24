@@ -23,6 +23,23 @@ function Row({ title, items, href }) {
   );
 }
 
+function VideoSpot({ title, note }) {
+  return (
+    <section className="mx-auto max-w-7xl px-5 pt-20">
+      <div className="flex aspect-video flex-col items-center justify-center bg-black px-6 text-center text-cream">
+        <p className="font-display text-2xl md:text-4xl">{title}</p>
+        <p className="mt-3 max-w-md text-xs text-ash">{note}</p>
+      </div>
+    </section>
+  );
+}
+
+const TESTIMONIALS = [
+  ['[Placeholder testimonial] The quality is better than I expected. It fits exactly how I wanted.', 'Customer name'],
+  ['[Placeholder testimonial] Fast delivery and the packaging felt premium.', 'Customer name'],
+  ['[Placeholder testimonial] My go-to for everyday pieces that still look sharp.', 'Customer name'],
+];
+
 export default async function Home() {
   const [best, trending] = await Promise.all([fetchRow('is_best_seller'), fetchRow('is_trending')]);
   return (
@@ -44,6 +61,8 @@ export default async function Home() {
       <Row title="Best Sellers" items={best} href="/shop?view=best" />
       <Row title="Trending" items={trending} href="/shop" />
 
+      <VideoSpot title="Campaign film" note="Placeholder: you will upload your campaign video from the admin dashboard." />
+
       <section id="gallery" className="mx-auto max-w-7xl scroll-mt-24 px-5 pt-20">
         <h2 className="font-display text-3xl">Lookbook</h2>
         <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -55,12 +74,41 @@ export default async function Home() {
         </div>
       </section>
 
+      <VideoSpot title="Product in motion" note="Placeholder: you will upload your product ad video from the admin dashboard." />
+
       <section className="mx-auto max-w-3xl px-5 pt-24 text-center">
         <h2 className="font-display text-3xl">Our story</h2>
         <p className="mt-4 leading-relaxed text-stone">
           [Placeholder] ED&apos;S ESSENTIALS is a contemporary label built on quality basics and individual style.
           Replace this paragraph with your own brand story.
         </p>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pt-24">
+        <h2 className="font-display text-3xl">What customers say</h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {TESTIMONIALS.map(([quote, name], i) => (
+            <figure key={i} className="bg-cream p-6">
+              <blockquote className="leading-relaxed">{quote}</blockquote>
+              <figcaption className="mt-4 text-sm text-stone">{name}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pt-24">
+        <div className="flex items-end justify-between">
+          <h2 className="font-display text-3xl">On Instagram</h2>
+          <a href="https://instagram.com/deonly_eds.essentials" className="text-sm underline underline-offset-4">@deonly_eds.essentials</a>
+        </div>
+        <div className="mt-6 grid grid-cols-3 gap-2 md:grid-cols-6">
+          {[1, 2, 3, 4, 5, 6].map(n => (
+            <a key={n} href="https://instagram.com/deonly_eds.essentials" aria-label={`Instagram post ${n}`}
+              className="flex aspect-square items-center justify-center bg-cream text-xs text-stone">
+              Placeholder {n}
+            </a>
+          ))}
+        </div>
       </section>
     </>
   );
