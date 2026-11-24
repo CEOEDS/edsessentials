@@ -1,6 +1,13 @@
+import NewsletterForm from './NewsletterForm';
+
 export default function Footer() {
   return (
     <footer className="mt-24 bg-black text-cream">
+      <div className="mx-auto max-w-7xl border-b border-white/10 px-5 py-12">
+        <p className="font-display text-2xl">Join the list</p>
+        <p className="mb-4 mt-2 text-sm text-ash">New drops and offers, straight to your inbox.</p>
+        <NewsletterForm />
+      </div>
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:grid-cols-3">
         <div>
           <p className="font-display text-2xl">ED&apos;S ESSENTIALS</p>
