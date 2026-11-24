@@ -3,18 +3,22 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { formatPrice } from '../../../lib/supabase';
 
+const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'One Size'];
+
 export default function ProductView({ product }) {
   const images = [...product.product_images].sort((a, b) => a.sort_order - b.sort_order);
   const variants = product.product_variants;
-  const sizes = [...new Set(variants.map(v => v.size))];
+  const sizes = [...new Set(variants.map(v => v.size))].sort((a, b) => SIZE_ORDER.indexOf(a) - SIZE_ORDER.indexOf(b));
   const colors = [...new Set(variants.map(v => v.color))];
+  const stockOf = v => (v ? v.stock_quantity - v.reserved_quantity : 0);
   const [img, setImg] = useState(0);
-  const [size, setSize] = useState(sizes[0]);
   const [color, setColor] = useState(colors[0]);
+  const [size, setSize] = useState(
+    sizes.find(s => stockOf(variants.find(x => x.size === s && x.color === colors[0])) > 0) || sizes[0]
+  );
   const [qty, setQty] = useState(1);
 
-  const v = variants.find(x => x.size === size && x.color === color);
-  const left = v ? v.stock_quantity - v.reserved_quantity : 0;
+  const left = stockOf(variants.find(x => x.size === size && x.color === color));
 
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-5 pt-10 md:grid-cols-2">
@@ -39,16 +43,15 @@ export default function ProductView({ product }) {
 
         <fieldset className="mt-8"><legend className="mb-2 text-sm">Colour: {color}</legend>
           <div className="flex flex-wrap gap-2">{colors.map(c => (
-            <button key={c} onClick={() => setColor(c)} aria-pressed={c === color}
+            <button key={c} onClick={() => { setColor(c); setQty(1); }} aria-pressed={c === color}
               className={`border px-4 py-2 text-sm ${c === color ? 'border-black bg-black text-white' : 'border-black/20'}`}>{c}</button>))}
           </div>
         </fieldset>
 
         <fieldset className="mt-6"><legend className="mb-2 text-sm">Size</legend>
           <div className="flex flex-wrap gap-2">{sizes.map(s => {
-            const vv = variants.find(x => x.size === s && x.color === color);
-            const out = !vv || vv.stock_quantity - vv.reserved_quantity <= 0;
-            return (<button key={s} onClick={() => setSize(s)} aria-pressed={s === size}
+            const out = stockOf(variants.find(x => x.size === s && x.color === color)) <= 0;
+            return (<button key={s} onClick={() => { setSize(s); setQty(1); }} aria-pressed={s === size}
               className={`border px-4 py-2 text-sm ${s === size ? 'border-black bg-black text-white' : 'border-black/20'} ${out ? 'line-through opacity-50' : ''}`}>{s}</button>);
           })}</div>
         </fieldset>
