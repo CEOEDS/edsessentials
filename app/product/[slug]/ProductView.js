@@ -1,11 +1,14 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import { formatPrice } from '../../../lib/supabase';
+import { useCart } from '../../../components/CartProvider';
 
 const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'One Size'];
 
 export default function ProductView({ product }) {
+  const cart = useCart();
   const images = [...product.product_images].sort((a, b) => a.sort_order - b.sort_order);
   const variants = product.product_variants;
   const sizes = [...new Set(variants.map(v => v.size))].sort((a, b) => SIZE_ORDER.indexOf(a) - SIZE_ORDER.indexOf(b));
@@ -17,8 +20,27 @@ export default function ProductView({ product }) {
     sizes.find(s => stockOf(variants.find(x => x.size === s && x.color === colors[0])) > 0) || sizes[0]
   );
   const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
 
-  const left = stockOf(variants.find(x => x.size === size && x.color === color));
+  const variant = variants.find(x => x.size === size && x.color === color);
+  const left = stockOf(variant);
+
+  function addToCart() {
+    if (!variant || left <= 0) return;
+    cart.add({
+      variantId: variant.id,
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      size,
+      color,
+      price: Number(product.price_ngn),
+      image: images[0]?.url,
+      qty,
+      max: left,
+    });
+    setAdded(true);
+  }
 
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-5 pt-10 md:grid-cols-2">
@@ -43,7 +65,7 @@ export default function ProductView({ product }) {
 
         <fieldset className="mt-8"><legend className="mb-2 text-sm">Colour: {color}</legend>
           <div className="flex flex-wrap gap-2">{colors.map(c => (
-            <button key={c} onClick={() => { setColor(c); setQty(1); }} aria-pressed={c === color}
+            <button key={c} onClick={() => { setColor(c); setQty(1); setAdded(false); }} aria-pressed={c === color}
               className={`border px-4 py-2 text-sm ${c === color ? 'border-black bg-black text-white' : 'border-black/20'}`}>{c}</button>))}
           </div>
         </fieldset>
@@ -51,7 +73,7 @@ export default function ProductView({ product }) {
         <fieldset className="mt-6"><legend className="mb-2 text-sm">Size</legend>
           <div className="flex flex-wrap gap-2">{sizes.map(s => {
             const out = stockOf(variants.find(x => x.size === s && x.color === color)) <= 0;
-            return (<button key={s} onClick={() => { setSize(s); setQty(1); }} aria-pressed={s === size}
+            return (<button key={s} onClick={() => { setSize(s); setQty(1); setAdded(false); }} aria-pressed={s === size}
               className={`border px-4 py-2 text-sm ${s === size ? 'border-black bg-black text-white' : 'border-black/20'} ${out ? 'line-through opacity-50' : ''}`}>{s}</button>);
           })}</div>
         </fieldset>
@@ -64,8 +86,13 @@ export default function ProductView({ product }) {
             <span className="w-8 text-center text-sm">{qty}</span>
             <button onClick={() => setQty(Math.min(Math.max(left, 1), qty + 1))} className="px-3 py-2" aria-label="Increase quantity">+</button>
           </div>
-          <button disabled className="flex-1 bg-black py-3 text-sm text-white opacity-40">Add to Cart (coming in Phase 2)</button>
+          <button onClick={addToCart} disabled={left <= 0} className="flex-1 bg-black py-3 text-sm text-white disabled:opacity-40">
+            {left <= 0 ? 'Sold out' : 'Add to Cart'}
+          </button>
         </div>
+        {added && (
+          <p role="status" className="mt-4 text-sm">Added to cart. <Link href="/cart" className="underline underline-offset-4">View cart</Link></p>
+        )}
       </div>
     </div>
   );
