@@ -1,5 +1,6 @@
 import './globals.css';
 import { Inter, Bodoni_Moda } from 'next/font/google';
+import CartProvider from '../components/CartProvider';
 import Nav from '../components/Nav';
 import Footer from '../components/Footer';
 
@@ -15,9 +16,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`}>
       <body>
-        <Nav />
-        <main>{children}</main>
-        <Footer />
+        <CartProvider>
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
