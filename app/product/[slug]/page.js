@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { supabase, PRODUCT_FIELDS } from '../../../lib/supabase';
 import ProductCard from '../../../components/ProductCard';
 import SizeGuide from '../../../components/SizeGuide';
+import WishlistButton from '../../../components/WishlistButton';
 import ProductView from './ProductView';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,9 @@ export default async function ProductPage({ params }) {
   return (
     <>
       <ProductView product={product} />
+      <div className="mx-auto max-w-7xl px-5 pt-6">
+        <WishlistButton productId={product.id} />
+      </div>
       <SizeGuide />
       <section className="mx-auto max-w-7xl px-5 pt-20">
         <h2 className="font-display text-3xl">You may also like</h2>
