@@ -19,6 +19,9 @@ export default async function Shop({ searchParams }) {
   let products = data || [];
   if (available === '1') products = products.filter(p => p.product_variants.some(v => v.stock_quantity - v.reserved_quantity > 0));
 
+  const { data: vrow } = await supabase.from('store_settings').select('value').eq('key', 'shop_video_url').maybeSingle();
+  const shopVideo = vrow?.value || null;
+
   const title = TITLES[collection] || (view === 'new' ? 'New Arrivals' : view === 'best' ? 'Best Sellers' : q ? `Results for "${q}"` : 'Shop All');
 
   return (
@@ -42,6 +45,17 @@ export default async function Shop({ searchParams }) {
           {products.map(p => <ProductCard key={p.id} p={p} />)}
         </div>
       )}
+
+      <section className="pt-20">
+        {shopVideo ? (
+          <video src={shopVideo} controls playsInline preload="metadata" className="aspect-video w-full bg-black" />
+        ) : (
+          <div className="flex aspect-video flex-col items-center justify-center bg-black px-6 text-center text-cream">
+            <p className="font-display text-2xl md:text-4xl">Shop film</p>
+            <p className="mt-3 max-w-md text-xs text-ash">Placeholder: upload your shop promo video in the admin Media page.</p>
+          </div>
+        )}
+      </section>
     </div>
   );
-}
+          }
