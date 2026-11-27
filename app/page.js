@@ -9,6 +9,12 @@ async function fetchRow(flag) {
   return data || [];
 }
 
+async function getSettings() {
+  const { data } = await supabase.from('store_settings').select('key, value')
+    .in('key', ['hero_image_url', 'campaign_video_url', 'product_video_url', 'brand_story']);
+  return Object.fromEntries((data || []).map(r => [r.key, r.value]));
+}
+
 function Row({ title, items, href }) {
   return (
     <section className="mx-auto max-w-7xl px-5 pt-20">
@@ -23,13 +29,17 @@ function Row({ title, items, href }) {
   );
 }
 
-function VideoSpot({ title, note }) {
+function VideoSpot({ title, note, src }) {
   return (
     <section className="mx-auto max-w-7xl px-5 pt-20">
-      <div className="flex aspect-video flex-col items-center justify-center bg-black px-6 text-center text-cream">
-        <p className="font-display text-2xl md:text-4xl">{title}</p>
-        <p className="mt-3 max-w-md text-xs text-ash">{note}</p>
-      </div>
+      {src ? (
+        <video src={src} controls playsInline preload="metadata" className="aspect-video w-full bg-black" />
+      ) : (
+        <div className="flex aspect-video flex-col items-center justify-center bg-black px-6 text-center text-cream">
+          <p className="font-display text-2xl md:text-4xl">{title}</p>
+          <p className="mt-3 max-w-md text-xs text-ash">{note}</p>
+        </div>
+      )}
     </section>
   );
 }
@@ -41,19 +51,21 @@ const TESTIMONIALS = [
 ];
 
 export default async function Home() {
-  const [best, trending] = await Promise.all([fetchRow('is_best_seller'), fetchRow('is_trending')]);
+  const [best, trending, s] = await Promise.all([fetchRow('is_best_seller'), fetchRow('is_trending'), getSettings()]);
+  const hero = s.hero_image_url;
   return (
     <>
-      <section className="relative flex min-h-[88vh] items-end bg-sand">
-        <div className="mx-auto w-full max-w-7xl px-5 pb-16">
+      <section className={`relative flex min-h-[88vh] items-end ${hero ? 'bg-black text-white' : 'bg-sand'}`}>
+        {hero && <img src={hero} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />}
+        <div className="relative mx-auto w-full max-w-7xl px-5 pb-16">
           <p className="hero-rise text-sm tracking-wide">ED&apos;S ESSENTIALS</p>
           <h1 className="hero-rise mt-3 max-w-3xl font-display text-5xl leading-[1.05] md:text-8xl">
             STYLE THAT SPEAKS FOR ITSELF.
           </h1>
           <p className="hero-rise mt-5 max-w-md">Elevate your everyday style with Ed&apos;s Essentials.</p>
           <div className="hero-rise mt-8 flex gap-3">
-            <Link href="/shop" className="bg-black px-7 py-3 text-sm text-white">Shop Now</Link>
-            <a href="#gallery" className="border border-black px-7 py-3 text-sm">Explore Gallery</a>
+            <Link href="/shop" className={`px-7 py-3 text-sm ${hero ? 'bg-white text-black' : 'bg-black text-white'}`}>Shop Now</Link>
+            <a href="#gallery" className={`border px-7 py-3 text-sm ${hero ? 'border-white' : 'border-black'}`}>Explore Gallery</a>
           </div>
         </div>
       </section>
@@ -61,7 +73,7 @@ export default async function Home() {
       <Row title="Best Sellers" items={best} href="/shop?view=best" />
       <Row title="Trending" items={trending} href="/shop" />
 
-      <VideoSpot title="Campaign film" note="Placeholder: you will upload your campaign video from the admin dashboard." />
+      <VideoSpot title="Campaign film" note="Placeholder: upload your campaign video in the admin Media page." src={s.campaign_video_url} />
 
       <section id="gallery" className="mx-auto max-w-7xl scroll-mt-24 px-5 pt-20">
         <h2 className="font-display text-3xl">Lookbook</h2>
@@ -74,13 +86,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <VideoSpot title="Product in motion" note="Placeholder: you will upload your product ad video from the admin dashboard." />
+      <VideoSpot title="Product in motion" note="Placeholder: upload your product ad video in the admin Media page." src={s.product_video_url} />
 
       <section className="mx-auto max-w-3xl px-5 pt-24 text-center">
         <h2 className="font-display text-3xl">Our story</h2>
-        <p className="mt-4 leading-relaxed text-stone">
-          [Placeholder] ED&apos;S ESSENTIALS is a contemporary label built on quality basics and individual style.
-          Replace this paragraph with your own brand story.
+        <p className="mt-4 whitespace-pre-line leading-relaxed text-stone">
+          {s.brand_story || "[Placeholder] ED'S ESSENTIALS is a contemporary label built on quality basics and individual style. Replace this in the admin Media page."}
         </p>
       </section>
 
@@ -112,4 +123,4 @@ export default async function Home() {
       </section>
     </>
   );
-}
+  }
