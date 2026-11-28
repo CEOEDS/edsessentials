@@ -1,6 +1,38 @@
 import NewsletterForm from './NewsletterForm';
+import { supabase } from '../lib/supabase';
 
-export default function Footer() {
+const DEFAULTS = {
+  contact_email: 'edsessentials0@gmail.com',
+  contact_whatsapp: '+234 814 371 7684',
+  social_instagram: 'https://instagram.com/deonly_eds.essentials',
+  social_tiktok: 'https://tiktok.com/@deonly.edsessentials',
+  social_x: 'https://x.com/edsessentials1',
+};
+
+const handle = (url) => {
+  const seg = String(url || '').split('?')[0].split('/').filter(Boolean).pop() || '';
+  return seg.startsWith('@') ? seg : '@' + seg;
+};
+
+async function getContact() {
+  try {
+    const { data } = await supabase
+      .from('store_settings')
+      .select('key, value')
+      .in('key', Object.keys(DEFAULTS));
+    const out = { ...DEFAULTS };
+    (data || []).forEach((r) => {
+      if (typeof r.value === 'string' && r.value.trim()) out[r.key] = r.value.trim();
+    });
+    return out;
+  } catch {
+    return DEFAULTS;
+  }
+}
+
+export default async function Footer() {
+  const c = await getContact();
+  const waDigits = c.contact_whatsapp.replace(/\D/g, '');
   return (
     <footer className="mt-24 bg-black text-cream">
       <div className="mx-auto max-w-7xl border-b border-white/10 px-5 py-12">
@@ -16,16 +48,16 @@ export default function Footer() {
         <div className="text-sm">
           <p className="mb-3 font-medium">Contact</p>
           <ul className="space-y-2 text-ash">
-            <li><a href="mailto:edsessentials0@gmail.com">edsessentials0@gmail.com</a></li>
-            <li><a href="https://wa.me/2348143717684">WhatsApp: +234 814 371 7684</a></li>
+            <li><a href={`mailto:${c.contact_email}`}>{c.contact_email}</a></li>
+            <li><a href={`https://wa.me/${waDigits}`}>WhatsApp: {c.contact_whatsapp}</a></li>
           </ul>
         </div>
         <div className="text-sm">
           <p className="mb-3 font-medium">Follow</p>
           <ul className="space-y-2 text-ash">
-            <li><a href="https://instagram.com/deonly_eds.essentials">Instagram @deonly_eds.essentials</a></li>
-            <li><a href="https://tiktok.com/@deonly.edsessentials">TikTok @deonly.edsessentials</a></li>
-            <li><a href="https://x.com/edsessentials1">X @edsessentials1</a></li>
+            <li><a href={c.social_instagram}>Instagram {handle(c.social_instagram)}</a></li>
+            <li><a href={c.social_tiktok}>TikTok {handle(c.social_tiktok)}</a></li>
+            <li><a href={c.social_x}>X {handle(c.social_x)}</a></li>
           </ul>
         </div>
       </div>
@@ -34,4 +66,4 @@ export default function Footer() {
       </p>
     </footer>
   );
-}
+  }
